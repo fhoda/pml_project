@@ -15,7 +15,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 ## Load Data
-```{r "load data and libraries"}
+```{r "load data and libraries", message=FALSE, warning=FALSE}
 library(caret)
 library(rpart)
 library(rpart.plot)
@@ -30,7 +30,7 @@ pml_testing <- read_csv("./pml-testing.csv")
 
 
 ## Data Exploration
-```{r "data exploration"}
+```{r "data exploration", warning=FALSE}
 dim(pml_training)
 dim(pml_testing)
 
@@ -42,7 +42,7 @@ Also there are a lot of variables that have NAs. This will be addressed when we 
 
 
 ## Data Cleaning and Processing
-```{r "data cleaning"}
+```{r "data cleaning", warning=FALSE}
 
 # Remove columns with NAs
 training = pml_training[colSums(is.na(pml_training)) == 0]
@@ -100,6 +100,9 @@ dt_cf
 
 
 ## Prediction on Test Data
+
+The random forest model is the most accurate at $0.9983$, so that is the model being used for prediction.
+
 ```{r prediction}
 final_prediction <- predict(modFitrf, testing)
 final_prediction
