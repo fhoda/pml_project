@@ -2,7 +2,8 @@
 title: "Practical Machine Learning Course Project"
 author: "Faisal Hoda"
 date: "June 1, 2017"
-output: html_document:
+output: 
+  html_document:
   toc: true
 ---
 
@@ -11,3 +12,101 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ## Introduction
+
+
+## Load Data
+```{r "load data and libraries"}
+library(caret)
+library(rpart)
+library(rpart.plot)
+library(randomForest)
+library(readr)
+
+
+pml_training <- read_csv("./pml-training.csv")
+pml_testing <- read_csv("./pml-testing.csv")
+
+```
+
+
+## Data Exploration
+```{r "data exploration"}
+dim(pml_training)
+dim(pml_testing)
+
+str(pml_training)
+```
+
+There are some variables which need to be changed to the appropriate data type.
+Also there are a lot of variables that have NAs. This will be addressed when we clean the data.
+
+
+## Data Cleaning and Processing
+```{r "data cleaning"}
+
+# Remove columns with NAs
+training = pml_training[colSums(is.na(pml_training)) == 0]
+dim(training)
+testing = pml_testing[colSums(is.na(pml_training)) == 0]
+dim(testing)
+
+
+# Create a training data set and a testing set.
+set.seed(20170602)
+inTrain <- createDataPartition(training$classe, p=0.6, list=FALSE)
+model_training <- training[inTrain, ]
+model_testing <- training[-inTrain, ]
+
+dim(model_training)
+dim(model_testing)
+```
+
+
+## Modeling 
+
+### Random Forest
+
+Generate a random forest model with cross validation to avoid overfitting. 
+
+```{r "random forest", cache=TRUE}
+modFitrf <- train(classe ~. - user_name - X1, method="rf", data=model_training, trControl=trainControl(method='cv'), number=3, allowParallel=TRUE, importance=TRUE )
+modFitrf
+
+```
+
+Test Model and Confusion Matrix
+```{r "RF test and confusion matrix"}
+predTest <- predict(modFitrf, model_testing)
+rf_cf <- confusionMatrix(predTest ,model_testing$classe)
+rf_cf
+```
+
+
+### Decision Tree
+```{r "decision tree", cache=TRUE}
+modFitdt <- train(classe ~. - user_name - X1, method="rpart", data=model_training)
+
+modFitdt
+
+```
+
+Test model and Confusion Matrix
+```{r "DT test and consution matrix"}
+predTest_dt <- predict(modFitdt, model_testing)
+dt_cf <- confusionMatrix(predTest_dt ,model_testing$classe)
+dt_cf
+
+```
+
+
+## Prediction on Test Data
+```{r prediction}
+final_prediction <- predict(modFitrf, testing)
+final_prediction
+
+```
+
+
+
+
+
